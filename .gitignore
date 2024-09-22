@@ -1,0 +1,13 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/pcollegeapi/obj
+/pcollegeapi/Properties/PublishProfiles
+/pcollegeapi/appsettings.json
+/pcollegeapi/appsettings.Development.json
+/pcollegeapi/appsettings.json
+/pcollegeapi/appsettings.Development.json
+/pcollegeapi/appsettings.json
+/pcollegeapi/appsettings.Development.json
+/pcollegeapi/appsettings.json

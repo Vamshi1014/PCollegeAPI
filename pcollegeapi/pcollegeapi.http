@@ -1,0 +1,6 @@
+@flyurdreamapi_HostAddress = http://localhost:5049
+
+GET {{flyurdreamapi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
