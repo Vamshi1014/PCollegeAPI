@@ -21,7 +21,7 @@ namespace Flyurdreamapi.Controllers
             _programRepository = iProgramRepository;
         }
 
-
+        //get programs
         [HttpGet("/GetPrograms")]
         public async Task<ActionResult<List<ProgramMaster>>> GetPrograms(string? programName=null)
         {
