@@ -342,9 +342,12 @@ namespace Flyurdreamcommands.Repositories.Concrete
                     if (objagent.IsUpdate.Company_IsUpdate == true)
                     {
                         companyDetails = await ExecuteUpsertCompanyDetailsAsync(companyDetails, transaction);
-                        // Upsert address
-                        companyDetails.CompanyAddress.Addresses = await _addressRepository.UpsertAddressAsync(companyDetails?.CompanyAddress?.Addresses, transaction);
-                        companyDetails.CompanyAddress = await _addressRepository.UpsertCompanyAddressesAsync(companyDetails?.CompanyAddress, transaction);
+                        if (objagent.IsUpdate.CompanyAddress_IsUpdate == true)
+                        {
+                            // Upsert address
+                            companyDetails.CompanyAddress.Addresses = await _addressRepository.UpsertAddressAsync(companyDetails?.CompanyAddress?.Addresses, transaction);
+                            companyDetails.CompanyAddress = await _addressRepository.UpsertCompanyAddressesAsync(companyDetails?.CompanyAddress, transaction);
+                        }
                     }
                     companyDetails.SetCompanyId(companyDetails.Company);
                     if (objagent.IsUpdate.User_IsUpdate == true)

@@ -15,5 +15,6 @@ namespace pcollegecommands.Models.Datafields
         public bool listTargetCountries_IsUpdate { get; set; }
         public bool EstimateStudentsperintake_IsUpdate { get; set; }
         public bool CompanyDocuments_IsUpdate { get; set; }
+        public bool CompanyAddress_IsUpdate { get; set; }
     }
 }
