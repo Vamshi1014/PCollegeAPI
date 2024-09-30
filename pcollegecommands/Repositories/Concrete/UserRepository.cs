@@ -17,6 +17,7 @@ using Flyurdreamcommands.Models.Enum;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Flyurdreamcommands.Repositories.Concrete
 {
@@ -258,8 +259,56 @@ namespace Flyurdreamcommands.Repositories.Concrete
               
                 //objCompanyUser.User.UserId = user.UserId;
                 objCompanyUser.IsParent = 1;
-                objCompanyUser.CompanyId = 1;
-               
+                //objCompanyUser.CompanyId = 1;
+
+                //if (appUser.GroupId == 3)
+                //{
+                //    //Company Details Insert
+                //    SqlCommand commandForCompany = new SqlCommand("UpsertCompanyDetails", connection);
+                //    commandForCompany.CommandType = CommandType.StoredProcedure;
+                //    commandForCompany.Parameters.AddWithValue("@CompanyId", DBNull.Value);
+                //    commandForCompany.Parameters.AddWithValue("@CompanyName", string.Empty);
+                //    commandForCompany.Parameters.AddWithValue("@BusinessRegistrationNumber", string.Empty);
+                //    commandForCompany.Parameters.AddWithValue("@CompanyWebAddress", DBNull.Value);
+                //    commandForCompany.Parameters.AddWithValue("@IsActive", string.Empty);
+                //    SqlParameter resultAddressIdParam = new SqlParameter("@ResultAddressID", SqlDbType.Int)
+                //    {
+                //        Direction = ParameterDirection.Output
+                //    };
+                //    commandForCompany.Parameters.Add(resultAddressIdParam);
+                //    SqlParameter successMessageParam = new SqlParameter("@SuccessMessage", SqlDbType.NVarChar, 100)
+                //    {
+                //        Direction = ParameterDirection.Output
+                //    };
+                //    commandForCompany.Parameters.Add(successMessageParam);
+                //    await commandForCompany.ExecuteNonQueryAsync();
+                //    var CompanyID = resultAddressIdParam.Value != DBNull.Value ? (int)resultAddressIdParam.Value : (int?)null;
+                //    var Result = successMessageParam.Value as string;
+
+                //    //Company User Insert
+                //    SqlCommand commandForCompanyUser = new SqlCommand("UpsertCompanyUser", connection);
+                //    commandForCompanyUser.CommandType = CommandType.StoredProcedure;
+
+                //    // Add parameters to the stored procedure
+                //    commandForCompanyUser.Parameters.AddWithValue("@CompanyUserId", 0);
+                //    commandForCompanyUser.Parameters.AddWithValue("@UserId", objCompanyUser.User.UserId);
+                //    commandForCompanyUser.Parameters.AddWithValue("@CompanyId", CompanyID);
+                //    commandForCompanyUser.Parameters.AddWithValue("@IsPrimaryContact", 1);
+                //    commandForCompanyUser.Parameters.AddWithValue("@BranchId", 0);
+                //    commandForCompanyUser.Parameters.AddWithValue("@IsParent", 0);
+                //    commandForCompanyUser.Parameters.Add("@CompanyUserIdOutput", SqlDbType.Int).Direction = ParameterDirection.Output;
+
+
+                //    // Add an output parameter for @CompanyUserId
+
+                //    // Execute the command
+                //    await commandForCompanyUser.ExecuteNonQueryAsync();
+
+                //    // Update the CompanyUserId property with the output parameter value
+                //    var CompanyUserId = Convert.ToInt32(commandForCompanyUser.Parameters["@CompanyUserIdOutput"].Value);
+
+                //}
+
                 // Handle the status as needed
                 switch (user.Response)
                 {
