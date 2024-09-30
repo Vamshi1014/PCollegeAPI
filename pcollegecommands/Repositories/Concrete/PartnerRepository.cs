@@ -20,6 +20,8 @@ using System.Reflection.Metadata;
 using System.ComponentModel.Design;
 using System.Diagnostics.Metrics;
 using Flyurdreamcommands.Helpers;
+using pcollegecommands.Models.Datafields;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Flyurdreamcommands.Repositories.Concrete
 {
@@ -78,7 +80,7 @@ namespace Flyurdreamcommands.Repositories.Concrete
             return companyDetails;
         }
 
-       
+
 
         public async Task<DocumentReponse> UpsertAgentDetails(DocumentReponse documentReponse)
         {
@@ -336,6 +338,9 @@ namespace Flyurdreamcommands.Repositories.Concrete
                 SqlTransaction transaction = connection.BeginTransaction();
                 CompanyDetails companyDetails = objagent?.Company;
                 Agent_Information agent_Information = objagent.AgentInformation;
+                List<TargetCountries> target_Countries = objagent.listTargetCountries;
+                List<EstimateStudentsperintake> estimateStudents_intake = objagent.EstimateStudentsperintake;
+
                 try
                 {
                     // Upsert company details
@@ -358,9 +363,17 @@ namespace Flyurdreamcommands.Repositories.Concrete
                     }
                     if (objagent.IsUpdate.AgentInformation_IsUpdate == true)
                     {
-                        agent_Information= await UpsertAgentInformation(agent_Information, transaction);
+                        agent_Information = await UpsertAgentInformation(agent_Information, transaction);
 
 
+                    }
+                    if (objagent.IsUpdate.listTargetCountries_IsUpdate == true)
+                    {
+                        target_Countries= await UpsertTargetCountriesInformation(target_Countries, transaction);
+                    }
+                    if (objagent.IsUpdate.EstimateStudentsperintake_IsUpdate == true)
+                    {
+                        estimateStudents_intake = await UpsertEstimateStudentsperintakeInformation(estimateStudents_intake, transaction);
                     }
                     // Commit transaction
                     transaction.Commit();
@@ -478,7 +491,7 @@ namespace Flyurdreamcommands.Repositories.Concrete
             return await Task.FromResult(base64Content);
         }
 
-        
+
         public static Document? GetMatchingDocument(Partner partner, Questions question)
         {
             foreach (var companyDocumentGroup in partner.CompanyDocuments)
@@ -519,53 +532,92 @@ namespace Flyurdreamcommands.Repositories.Concrete
         {
 
             await using (SqlCommand cmd = new SqlCommand("UpsertAgentInformation", transaction.Connection, transaction))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                // Add parameters for the procedure
+                cmd.Parameters.AddWithValue("@AgentID", (object)agent.AgentID ?? DBNull.Value);  // Pass DBNull for NULL values
+                cmd.Parameters.AddWithValue("@AgentName", agent.AgentName);
+                cmd.Parameters.AddWithValue("@CertifyingPersonName", (object)agent.CertifyingPersonName ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@CertifyingPersonRole", (object)agent.CertifyingPersonRole ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Signature", (object)agent.Signature ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Date", agent.Date);
+                cmd.Parameters.AddWithValue("@ICEFAccreditation", (object)agent.ICEFAccreditation ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@ICEFDocument", agent.ICEFDocument);
+                cmd.Parameters.AddWithValue("@LegalStatus", (object)agent.LegalStatus ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@LegalStatusDocument", agent.LegalStatusDocument);
+                cmd.Parameters.AddWithValue("@ServiceCharges", (object)agent.ServiceCharges ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@UploadedBy", (object)agent.UploadedBy.UserId ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@UploadedOn", DateTime.Now);
+                cmd.Parameters.AddWithValue("@CreatedBy", (object)agent.UploadedBy.UserId ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@CreatedOn", DateTime.Now);
+                cmd.Parameters.AddWithValue("@Status", (object)agent.Status ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@IsActive", agent.IsActive);
+                cmd.Parameters.AddWithValue("@CompanyId", agent.CompanyId);
+                cmd.Parameters.AddWithValue("@BranchId", agent.BranchId);
+
+                // If we are updating, use ExecuteNonQuery
+                if (agent.AgentID == 0)
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    // Add parameters for the procedure
-                    cmd.Parameters.AddWithValue("@AgentID", (object)agent.AgentID ?? DBNull.Value);  // Pass DBNull for NULL values
-                    cmd.Parameters.AddWithValue("@AgentName", agent.AgentName);
-                    cmd.Parameters.AddWithValue("@CertifyingPersonName", (object)agent.CertifyingPersonName ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CertifyingPersonRole", (object)agent.CertifyingPersonRole ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Signature", (object)agent.Signature ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Date", agent.Date);
-                    cmd.Parameters.AddWithValue("@ICEFAccreditation", (object)agent.ICEFAccreditation ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@ICEFDocument", agent.ICEFDocument);
-                    cmd.Parameters.AddWithValue("@LegalStatus", (object)agent.LegalStatus ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@LegalStatusDocument", agent.LegalStatusDocument);
-                    cmd.Parameters.AddWithValue("@ServiceCharges", (object)agent.ServiceCharges ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@UploadedBy", (object)agent.UploadedBy.UserId ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@UploadedOn", DateTime.Now);
-                    cmd.Parameters.AddWithValue("@CreatedBy", (object)agent.UploadedBy.UserId ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CreatedOn", DateTime.Now);
-                    cmd.Parameters.AddWithValue("@Status", (object)agent.Status ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@IsActive", agent.IsActive);
-                    cmd.Parameters.AddWithValue("@CompanyId", agent.CompanyId);
-                    cmd.Parameters.AddWithValue("@BranchId", agent.BranchId);
-
-                    // If we are updating, use ExecuteNonQuery
-                    if (agent.AgentID == 0)
-                    {
                     // If inserting, use ExecuteScalar to get the new identity value
-                     agent.AgentID = Convert.ToInt32(await cmd.ExecuteScalarAsync());
-                      return agent;
+                    agent.AgentID = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+                    return agent;
 
 
-                    }
-                    else
-                    {
+                }
+                else
+                {
 
                     await cmd.ExecuteNonQueryAsync();
                     return agent;
 
                 }
+            }
+
+        }
+
+        public async Task<List<TargetCountries>> UpsertTargetCountriesInformation(List<TargetCountries> targetCountries, SqlTransaction transaction)
+        {
+            try
+            {
+                await using (SqlCommand command = new SqlCommand("UpsertTargetCountries", transaction.Connection, transaction))
+                {
+                    SqlParameter parameter = command.Parameters.AddWithValue("@TargetCountriesType", targetCountries);
+                    parameter.SqlDbType = SqlDbType.Structured;
+                    parameter.TypeName = "dbo.TargetCountriesType";
+                    await command.ExecuteNonQueryAsync();
+
                 }
-            
+                return targetCountries;
+            }
+            catch(Exception e)
+            {
+                throw e;
+            }
         }
 
 
-    }
+        public async Task<List<EstimateStudentsperintake>> UpsertEstimateStudentsperintakeInformation(List<EstimateStudentsperintake> estimateStudentsperintakes, SqlTransaction transaction)
+        {
+            try
+            {
+                await using (SqlCommand command = new SqlCommand("UpsertEstimateNumberOfStudents", transaction.Connection, transaction))
+                {
+                    SqlParameter parameter = command.Parameters.AddWithValue("@EstimateNumberOfStudentsPerIntakeType", estimateStudentsperintakes);
+                    parameter.SqlDbType = SqlDbType.Structured;
+                    parameter.TypeName = "dbo.EstimateNumberOfStudentsPerIntakeType";
+                    await command.ExecuteNonQueryAsync();
 
+                }
+                return estimateStudentsperintakes;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
+        }
+    }
 
 }
 

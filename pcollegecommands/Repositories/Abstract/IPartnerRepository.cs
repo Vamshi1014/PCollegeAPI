@@ -7,6 +7,7 @@ using Flyurdreamcommands.Models.Datafields;
 using Flyurdreamcommands.Repositories.Concrete;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Data.SqlClient;
+using pcollegecommands.Models.Datafields;
 
 namespace Flyurdreamcommands.Repositories.Abstract
 {
@@ -24,5 +25,6 @@ namespace Flyurdreamcommands.Repositories.Abstract
     //    Task<(List<CompanyBranches>, string)> GetCompanyBranchDetailsByUserAsync(int userId);
       //  Task<Agent> GetCompanyDetailsAsyncByCompanyId(int companyId);
         Task<Agent_Information> UpsertAgentInformation(Agent_Information agent, SqlTransaction transaction);
+
     }
 }

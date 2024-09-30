@@ -16,6 +16,31 @@ namespace Flyurdreamcommands.Models.Datafields
             table.Columns.Add("container_name", typeof(string));
             return table;
         }
+
+        public DataTable TargetCountriesType()
+        {
+            DataTable table = new DataTable();
+            table.Columns.Add("CountryId", typeof(int));
+            table.Columns.Add("CountryName", typeof(string));
+            table.Columns.Add("CreatedBy", typeof(int)); 
+            table.Columns.Add("UploadedBy", typeof(int));
+            table.Columns.Add("CompanyId", typeof(int));
+            table.Columns.Add("BranchId", typeof(int));
+            return table;
+        }
+
+        public DataTable EstimateNumberOfStudentsPerIntakeType()
+        {
+            DataTable table = new DataTable();
+            table.Columns.Add("IntakeId", typeof(int));
+            table.Columns.Add("EstimateOfStudents", typeof(int));
+            table.Columns.Add("CreatedBy", typeof(int)); // Change to string to store URL
+            table.Columns.Add("UploadedBy", typeof(int));
+            table.Columns.Add("CompanyId", typeof(int));
+            table.Columns.Add("BranchId", typeof(int));
+            
+            return table;
+        }
         public DataTable EnglishExamScoreDataTable()
         {
             DataTable table = new DataTable();
