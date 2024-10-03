@@ -20,10 +20,14 @@ namespace Flyurdreamcommands.Models.Datafields
         public DataTable TargetCountriesType()
         {
             DataTable table = new DataTable();
+            table.Columns.Add("Id", typeof(int));
             table.Columns.Add("CountryId", typeof(int));
             table.Columns.Add("CountryName", typeof(string));
-            table.Columns.Add("CreatedBy", typeof(int)); 
+            table.Columns.Add("CreatedBy", typeof(int));
+            table.Columns.Add("CreatedOn", typeof(DateTime));
+
             table.Columns.Add("UploadedBy", typeof(int));
+            table.Columns.Add("UploadedOn", typeof(DateTime));
             table.Columns.Add("CompanyId", typeof(int));
             table.Columns.Add("BranchId", typeof(int));
             return table;
@@ -32,10 +36,13 @@ namespace Flyurdreamcommands.Models.Datafields
         public DataTable EstimateNumberOfStudentsPerIntakeType()
         {
             DataTable table = new DataTable();
+            table.Columns.Add("Id", typeof(int));
             table.Columns.Add("IntakeId", typeof(int));
             table.Columns.Add("EstimateOfStudents", typeof(int));
-            table.Columns.Add("CreatedBy", typeof(int)); // Change to string to store URL
+            table.Columns.Add("CreatedBy", typeof(int));
+            table.Columns.Add("CreatedOn", typeof(DateTime));
             table.Columns.Add("UploadedBy", typeof(int));
+            table.Columns.Add("UploadedOn", typeof(DateTime));
             table.Columns.Add("CompanyId", typeof(int));
             table.Columns.Add("BranchId", typeof(int));
             

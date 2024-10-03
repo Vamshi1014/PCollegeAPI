@@ -111,7 +111,19 @@ namespace Flyurdreamcommands.Models.Datafields
         public CompanyUser? CompanyUser { get; set; }
         public CompanyAddress? CompanyAddress { get; set; }
         public Company? Company { get; set; }
-        public CompanyReferences? CompanyReferences { get; set; }        
+        public CompanyReferences? CompanyReferences { get; set; }
+
+        public string? PortalWebAddress { get; set; }
+
+        public string? PortalWebAddress2 { get; set; }
+        public string? PortalocalAddress { get; set; }
+        public string? TradeName { get; set; }
+        public string? Mobile { get; set; }
+        public string? email { get; set; }
+        public User? CreatedBy { get; set; }
+        public DateTime CreatedOn { get; set; }
+        public User? UploadedBy { get; set; }
+        public DateTime UploadedOn { get; set; }
         public void SetCompanyId(Company company)
         {
             Company = company;
@@ -130,6 +142,9 @@ namespace Flyurdreamcommands.Models.Datafields
 
             }
         }
+
+
+
     }
 
     public class DocumentReponse 
