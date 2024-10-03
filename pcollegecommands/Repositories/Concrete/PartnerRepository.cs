@@ -60,6 +60,16 @@ namespace Flyurdreamcommands.Repositories.Concrete
                     command.Parameters.AddWithValue("@BusinessRegistrationNumber", company.BusinessRegistrationNumber);
                     command.Parameters.AddWithValue("@CompanyWebAddress", (object)company.CompanyWebAddress ?? DBNull.Value);
                     command.Parameters.AddWithValue("@IsActive", company.IsActive);
+                    command.Parameters.AddWithValue("@PortalWebAddress", companyDetails.PortalWebAddress);
+                    command.Parameters.AddWithValue("@PortalWebAddress2", companyDetails.PortalWebAddress2);
+                    command.Parameters.AddWithValue("@Portallocaladdress", companyDetails.PortalocalAddress);
+                    command.Parameters.AddWithValue("@TradeName", companyDetails.TradeName);
+                    command.Parameters.AddWithValue("@Mobile", companyDetails.Mobile);
+                    command.Parameters.AddWithValue("@email", companyDetails.email);
+                    command.Parameters.AddWithValue("@Status", 0);
+                    //command.Parameters.AddWithValue("@UploadedOn", DateTime.Now);
+                    command.Parameters.AddWithValue("@CreatedBy", (object)companyDetails.CompanyUser?.User?.UserId ?? DBNull.Value);
+                    //command.Parameters.AddWithValue("@CreatedOn", DateTime.Now);
                     SqlParameter resultAddressIdParam = new SqlParameter("@ResultAddressID", SqlDbType.Int)
                     {
                         Direction = ParameterDirection.Output
@@ -347,15 +357,18 @@ namespace Flyurdreamcommands.Repositories.Concrete
                     if (objagent.IsUpdate.Company_IsUpdate == true)
                     {
                         companyDetails = await ExecuteUpsertCompanyDetailsAsync(companyDetails, transaction);
-                        // Upsert address
-                        companyDetails.CompanyAddress.Addresses = await _addressRepository.UpsertAddressAsync(companyDetails?.CompanyAddress?.Addresses, transaction);
-                        companyDetails.CompanyAddress = await _addressRepository.UpsertCompanyAddressesAsync(companyDetails?.CompanyAddress, transaction);
+                        if (objagent.IsUpdate.CompanyAddress_IsUpdate == true)
+                        {
+                            // Upsert address
+                            companyDetails.CompanyAddress.Addresses = await _addressRepository.UpsertAddressAsync(companyDetails?.CompanyAddress?.Addresses, transaction);
+                            companyDetails.CompanyAddress = await _addressRepository.UpsertCompanyAddressesAsync(companyDetails?.CompanyAddress, transaction);
+                        }
                     }
                     companyDetails.SetCompanyId(companyDetails.Company);
                     if (objagent.IsUpdate.User_IsUpdate == true)
                     {
                         companyDetails.CompanyUser.User = await _userRepository.UpdateUser(companyDetails?.CompanyUser?.User, transaction);
-                        companyDetails.CompanyUser = await _userRepository.UpsertCompanyUserAsync(companyDetails?.CompanyUser, transaction);
+                        //companyDetails.CompanyUser = await _userRepository.UpsertCompanyUserAsync(companyDetails?.CompanyUser, transaction);
 
                     }
                     if (objagent.IsUpdate.AgentInformation_IsUpdate == true)
@@ -366,7 +379,7 @@ namespace Flyurdreamcommands.Repositories.Concrete
                     }
                     if (objagent.IsUpdate.listTargetCountries_IsUpdate == true)
                     {
-                        target_Countries= await UpsertTargetCountriesInformation(target_Countries, transaction);
+                        target_Countries = await UpsertTargetCountriesInformation(target_Countries, transaction);
                     }
                     if (objagent.IsUpdate.EstimateStudentsperintake_IsUpdate == true)
                     {
@@ -577,17 +590,36 @@ namespace Flyurdreamcommands.Repositories.Concrete
         {
             try
             {
-                await using (SqlCommand command = new SqlCommand("UpsertTargetCountries", transaction.Connection, transaction))
+                DataTables objDataTables = new DataTables();
+                List<TargetCountries> updateTargetCountries = new List<TargetCountries>();               
+                using (SqlCommand command = new SqlCommand("UpsertTargetCountries", transaction.Connection, transaction))
                 {
-                    SqlParameter parameter = command.Parameters.AddWithValue("@TargetCountriesType", targetCountries);
+                    command.CommandType = CommandType.StoredProcedure;
+                    DataTable targetCountriesDataTable = objDataTables.TargetCountriesType(); // Ensure this method creates the DataTable correctly
+                    foreach (var targetCountrie in targetCountries)
+                    {
+                        targetCountriesDataTable.Rows.Add(
+                            targetCountrie.Id,
+                           targetCountrie.Country?.CountryID,
+                           targetCountrie.Country?.CountryName,
+                           targetCountrie.CreatedBy?.UserId,
+                           targetCountrie.CreatedOn,
+                           targetCountrie.UploadedBy?.UserId,
+                           targetCountrie.UploadedOn,
+                           targetCountrie.CompanyId,
+                           targetCountrie.BranchId
+                        );
+                    }
+                    SqlParameter parameter = command.Parameters.AddWithValue("@Countries", targetCountriesDataTable);
                     parameter.SqlDbType = SqlDbType.Structured;
                     parameter.TypeName = "dbo.TargetCountriesType";
                     await command.ExecuteNonQueryAsync();
 
                 }
+               
                 return targetCountries;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw e;
             }
@@ -598,14 +630,32 @@ namespace Flyurdreamcommands.Repositories.Concrete
         {
             try
             {
-                await using (SqlCommand command = new SqlCommand("UpsertEstimateNumberOfStudents", transaction.Connection, transaction))
+                DataTables objDataTables = new DataTables();
+                List<EstimateStudentsperintake> updateEstimateStudentsperintakes = new List<EstimateStudentsperintake>();
+                using (SqlCommand command = new SqlCommand("UpsertEstimateNumberOfStudents", transaction.Connection, transaction))
                 {
-                    SqlParameter parameter = command.Parameters.AddWithValue("@EstimateNumberOfStudentsPerIntakeType", estimateStudentsperintakes);
+                    command.CommandType = CommandType.StoredProcedure;
+                    DataTable targetCountriesDataTable = objDataTables.EstimateNumberOfStudentsPerIntakeType(); // Ensure this method creates the DataTable correctly
+                    foreach (var estimateStudentsperintake in estimateStudentsperintakes)
+                    {
+                        targetCountriesDataTable.Rows.Add(
+                            estimateStudentsperintake.Id,
+                           estimateStudentsperintake.IntakeId?.IntakeId,
+                           estimateStudentsperintake.EstimateOfStudents,
+                           estimateStudentsperintake.CreatedBy?.UserId,
+                           estimateStudentsperintake.CreatedOn,
+                           estimateStudentsperintake.UploadedBy?.UserId,
+                           estimateStudentsperintake.UploadedOn,
+                           estimateStudentsperintake.CompanyId,
+                           estimateStudentsperintake.BranchId
+                        );
+                    }
+                    SqlParameter parameter = command.Parameters.AddWithValue("@Estimate", targetCountriesDataTable);
                     parameter.SqlDbType = SqlDbType.Structured;
                     parameter.TypeName = "dbo.EstimateNumberOfStudentsPerIntakeType";
                     await command.ExecuteNonQueryAsync();
-
                 }
+                
                 return estimateStudentsperintakes;
             }
             catch (Exception e)
