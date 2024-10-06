@@ -13,7 +13,7 @@ namespace Flyurdreamcommands.Models.Datafields
         public string? DocumentName { get; set; }
         public string? FilePath { get; set; }
         public string? ContainerName { get; set; }
-        public string? UploadedBy { get; set; }        
+        public int UploadedBy { get; set; }        
         public byte[]? Content { get; set; }
         public DateTime UploadedAt { get; set; }
         public DocumentType DocumentType { get; set; }
