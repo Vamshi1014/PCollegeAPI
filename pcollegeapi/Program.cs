@@ -14,7 +14,9 @@ IConfiguration configuration = new ConfigurationBuilder()
 ConfigurationData.DbConnectionString = configuration.GetConnectionString("fudSQLConnection");
 ConfigurationData.BlobConnectionString = configuration.GetConnectionString("AzureStorageAccount");
 ConfigurationData.BlobContainerName = configuration.GetConnectionString("ContainerName");
- ConfigurationData.BlobRootURI = configuration.GetConnectionString("blobrooturi");
+ConfigurationData.BlobRootURI = configuration.GetConnectionString("blobrooturi");
+string WhitelistClientUrl = configuration["WhitelistClientUrl"];
+string Headers = configuration["Headers"];
 //var jwtSettings = new JwtSettings();
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -58,12 +60,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: "cors",
         builder =>
         {
-            builder.WithOrigins("http://localhost:3000", "https://localhost:3000", "http://crmpcollege-gwe7bac9gtbhbed3.uksouth-01.azurewebsites.net", "https://crmpcollege-gwe7bac9gtbhbed3.uksouth-01.azurewebsites.net")
-                 .WithHeaders("Content-Type", "Accept", "Authorization")
+            builder.WithOrigins(WhitelistClientUrl)
+                 .WithHeaders(Headers)
                   .AllowAnyMethod()
                    .AllowCredentials();
         });
-    //builder.WithOrigins("http://localhost:3000", "https://localhost:3000").AllowAnyHeader().AllowAnyMethod().SetPreflightMaxAge(TimeSpan.FromSeconds(86400)); // Set the maximum age for preflight requests;
+
 });
 var app = builder.Build();
 // Configure the HTTP request pipeline.

@@ -78,7 +78,7 @@ namespace Flyurdreamcommands.Repositories.Concrete
                             DocumentId = reader.IsDBNull(0) ? default : reader.GetInt32(0),
                             DocumentName = reader.IsDBNull(1) ? null : reader.GetString(1),
                             FilePath = reader.IsDBNull(2) ? null : reader.GetString(2), // Assuming URL is stored in FilePath
-                            UploadedBy = reader.IsDBNull(3) ? null : reader.GetString(3),
+                            UploadedBy = reader.IsDBNull(3) ? default : reader.GetInt32(3),
                             UploadedAt = reader.IsDBNull(4) ? default : reader.GetDateTime(4),
                             DocumentType = new DocumentType
                             {
@@ -106,84 +106,92 @@ namespace Flyurdreamcommands.Repositories.Concrete
 
         public async Task<IList<Document>> UpsertDocumentAsync(IList<Document> documentResponse, int companyId, SqlTransaction transaction, string? id = null)
         {
-            List<Document> insertedDocuments = new List<Document>();
-
-            using (SqlCommand command = new SqlCommand("UpsertDocuments", transaction.Connection, transaction))
+            try
             {
-                command.CommandType = CommandType.StoredProcedure;
+                List<Document> insertedDocuments = new List<Document>();
 
-                // Create DataTable that matches the DocumentsTableType structure
-                DataTable documentsTable = objDataTables.DocumentsDataTable();
-
-                if (documentResponse != null && documentResponse.Count > 0)
+                using (SqlCommand command = new SqlCommand("UpsertDocuments", transaction.Connection, transaction))
                 {
-                    foreach (Document document in documentResponse)
-                    {
-                        // Assuming UploadFileToBlob is a method that uploads a file and returns the updated document with the file path
-                        Document updatedDocument = await UploadFileToBlob(document, companyId, id);
-                        documentsTable.Rows.Add(
-                            document.DocumentId,
-                            updatedDocument.DocumentName,
-                            updatedDocument.FilePath,
-                            document.UploadedBy,
-                            document.UploadedAt,
-                            document.DocumentType.Id,
-                            updatedDocument.ContainerName
-                        );
-                    }
-                }
+                    command.CommandType = CommandType.StoredProcedure;
 
+                    // Create DataTable that matches the DocumentsTableType structure
+                    DataTable documentsTable = objDataTables.DocumentsDataTable();
 
-                SqlParameter parameter = command.Parameters.AddWithValue("@DocumentsData", documentsTable);
-                parameter.SqlDbType = SqlDbType.Structured;
-                parameter.TypeName = "dbo.DocumentsTableType";
-                int count = 0;
-                using (SqlDataReader reader = await command.ExecuteReaderAsync())
-                {
-                    while (await reader.ReadAsync())
+                    if (documentResponse != null && documentResponse.Count > 0)
                     {
-                        Document insertedDocument = new Document
+                        foreach (Document document in documentResponse)
                         {
-                            DocumentId = reader.IsDBNull(0) ? default : reader.GetInt32(0),
-                            DocumentName = reader.IsDBNull(1) ? null : reader.GetString(1),
-                            FilePath = reader.IsDBNull(2) ? null : reader.GetString(2), // Assuming URL is stored in FilePath
-                            UploadedBy = reader.IsDBNull(3) ? null : reader.GetString(3),
-                            UploadedAt = reader.IsDBNull(4) ? default : reader.GetDateTime(4),
-                            DocumentType = new DocumentType
+                            // Assuming UploadFileToBlob is a method that uploads a file and returns the updated document with the file path
+                            Document updatedDocument = await UploadFileToBlob(document, companyId, id);
+                            documentsTable.Rows.Add(
+                                document.DocumentId,
+                                updatedDocument.DocumentName,
+                                updatedDocument.FilePath,
+                                document.UploadedBy,
+                                DateTime.Now,
+                                document.DocumentType.Id,
+                                updatedDocument.ContainerName
+                            );
+                        }
+                    }
+
+
+                    SqlParameter parameter = command.Parameters.AddWithValue("@DocumentsData", documentsTable);
+                    parameter.SqlDbType = SqlDbType.Structured;
+                    parameter.TypeName = "dbo.DocumentsTableType";
+                    int count = 0;
+                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            Document insertedDocument = new Document
                             {
-                                Id = (DocumentTypeId)Enum.ToObject(typeof(DocumentTypeId), reader.GetInt32(5)),
-                            },
+                                DocumentId = reader.IsDBNull(0) ? default : reader.GetInt32(0),
+                                DocumentName = reader.IsDBNull(1) ? null : reader.GetString(1),
+                                FilePath = reader.IsDBNull(2) ? null : reader.GetString(2), // Assuming URL is stored in FilePath
+                                UploadedBy = reader.IsDBNull(3) ? default : reader.GetInt32(3),
+                                UploadedAt = reader.IsDBNull(4) ? default : reader.GetDateTime(4),
+                                DocumentType = new DocumentType
+                                {
+                                    Id = (DocumentTypeId)Enum.ToObject(typeof(DocumentTypeId), reader.GetInt32(5)),
+                                },
 
-                            ContainerName = reader.IsDBNull(6) ? null : reader.GetString(6),
+                                ContainerName = reader.IsDBNull(6) ? null : reader.GetString(6),
 
-                        };
+                            };
 
-                        documentResponse[count].DocumentId = insertedDocument.DocumentId;
-                        count++;
-                        insertedDocuments.Add(insertedDocument);
+                            documentResponse[count].DocumentId = insertedDocument.DocumentId;
+                            count++;
+                            insertedDocuments.Add(insertedDocument);
 
 
+                        }
                     }
                 }
-            }
 
-            // Update the partner's CompanyDocuments with the inserted documents
+                // Update the partner's CompanyDocuments with the inserted documents
+            }
+            catch(Exception ex)
+            {
+
+                throw ex;
+            }
 
 
             return documentResponse;
         }
 
 
-        public async Task<Document> UploadFileToBlob(Document document, int companyId, string? id = null) //Id is companyId or userId
+        public async Task<Document> UploadFileToBlob(Document document, int companyId, string? id = null) //Id  userId
         {
             try
             {
 
-                if (document.DocumentType.Id == DocumentTypeId.BusinessCertificate || document.DocumentType.Id == DocumentTypeId.CompanyProfile || document.DocumentType.Id == DocumentTypeId.OtherBusiness)
+                if (document.DocumentType.Id == DocumentTypeId.ICEFAccreditation || document.DocumentType.Id == DocumentTypeId.LegalStatus || document.DocumentType.Id == DocumentTypeId.OtherBusinessDocument)
                 {
                     document.DocumentName = companyId + "_" + Guid.NewGuid().ToString() + "_" + document.DocumentName;
                     document.ContainerName = DocumentFor.Business.DocumentForToEnumString().ToLower();
-                    document.FilePath = await _blobHandler.CreateBlobFromBytes(document.ContainerName, companyId+"/"+document.DocumentName, document.Content);
+                    document.FilePath = await _blobHandler.CreateBlobFromBytes(document.ContainerName, DocumentFor.Pcollege.DocumentForToEnumString().ToLower()+"/"+companyId +"/"+document.DocumentName, document.Content);
                 }
                 else
                 {
@@ -262,25 +270,15 @@ namespace Flyurdreamcommands.Repositories.Concrete
                     using (SqlDataReader reader = await command.ExecuteReaderAsync())
                     {
                         List<int> companyDocumentIds = new List<int>();
-                        //int index = 0;
-
-                        //while (await reader.ReadAsync())
-                        //{
-                        //    int companyDocumentId = reader.GetInt32(0);
-                        //    documentResponse.CompanyDocuments[index].CompanyDocumentId = companyDocumentId;
-                        //    companyDocumentIds.Add(companyDocumentId);
-                        //    index++;
-                        //}
                         int index = 0;
+
+                        // Reading the result set asynchronously
                         while (await reader.ReadAsync())
                         {
                             int companyDocumentId = reader.GetInt32(0);
 
-                            // Ensure the list is initialized
-                            if (documentResponse.CompanyDocuments == null)
-                            {
-                                documentResponse.CompanyDocuments = new List<CompanyDocuments>();
-                            }
+                            // Initialize the list if it's null
+                            documentResponse.CompanyDocuments ??= new List<CompanyDocuments>();
 
                             // Ensure the list has enough capacity
                             while (documentResponse.CompanyDocuments.Count <= index)

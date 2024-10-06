@@ -123,127 +123,7 @@ namespace Flyurdreamcommands.Repositories.Concrete
             return documentReponse;
         }
 
-        public async Task<DocumentReponse> UpsertResponseDetails(DocumentReponse documentResponse)
-        {
-            string Id = string.Empty;
-            using (SqlConnection connection = new SqlConnection(ConfigurationData.DbConnectionString))
-            {
-                await connection.OpenAsync();
-                SqlTransaction transaction = connection.BeginTransaction();
-                try
-                {// Get the base64 encoded content
-
-                    //RGVmYXVsdCBWYWx1ZQ== //c3RyaW5n
-                    // Compare the content with the expected base64 value
-                    if (documentResponse.CompanyDocuments[0].Documents[0].Content == null)
-                    {
-                        // Perform necessary operations if contents match
-                    }
-                    else
-                    {
-                        IList<Document> documents = new List<Document>();
-                        // Upsert and insert documents if contents do not match
-                        documents = await _documentRepository.UpsertDocumentAsync(documentResponse.CompanyDocuments[0].Documents, documentResponse.CompanyId, transaction, Id);
-                        foreach (var companyDocuments in documentResponse.CompanyDocuments)
-                        {
-                            companyDocuments.Documents = documents;
-                        }
-                        // documentResponse = await _documentRepository.InsertCompanyDocumentsAsync(documentResponse, transaction);
-                    }
-                    // Bulk upsert responses
-                    documentResponse = await UpsertResponsesAsync(documentResponse, transaction);
-                    // Commit transaction
-                    transaction.Commit();
-                }
-                catch (Exception ex)
-                {
-                    // Rollback transaction on error
-                    transaction.Rollback();
-                    throw;
-                }
-                finally
-                {
-                    // Close connection
-                    _ = connection.CloseAsync();
-                }
-            }
-
-            return documentResponse;
-        }
-        public async Task<DocumentReponse> UpsertResponsesAsync(DocumentReponse documentResponse, SqlTransaction transaction)
-        {
-            try
-            {
-                DataTable responsesTable = _objDataTables.ResponsesDataTable();
-
-                // Fetch QuestionsId and DocumentType from database
-                List<(int QuestionsId, int DocumentTypeId)> results = await GetQuestionsIdAndDocumentTypeByCompanyId(documentResponse.CompanyId);
-
-                if (documentResponse.Responses != null)
-                {
-                    foreach (var response in documentResponse.Responses)
-                    {
-                        // Find the matching result for the current response's QuestionId                           
-                        var result = results.FirstOrDefault(r => r.QuestionsId == response.QuestionId);
-                        if (result != default)
-                        {
-                            int documentId = GetDocumentIdForResponse(documentResponse.CompanyDocuments, result.DocumentTypeId);
-
-                            // Update responsesTable with response data
-                            responsesTable.Rows.Add(response.ResponsesId, response.QuestionId, documentResponse.CompanyId, response.ResponseText, documentId);
-                        }
-                        else
-                        {
-                            // If no matching result is found, add with DocumentId = 0
-                            responsesTable.Rows.Add(response.ResponsesId, response.QuestionId, documentResponse.CompanyId, response.ResponseText, 0);
-                        }
-                    }
-                }
-
-                using (SqlCommand command = new SqlCommand("BulkUpsertResponses", transaction.Connection, transaction))
-                {
-                    command.CommandType = CommandType.StoredProcedure;
-
-                    // Add responsesTable as TVP parameter
-                    SqlParameter parameter = command.Parameters.AddWithValue("@ResponsesData", responsesTable);
-                    parameter.SqlDbType = SqlDbType.Structured;
-                    parameter.TypeName = "dbo.ResponsesTableType"; // Ensure this matches your table type name
-
-                    // Execute the stored procedure and get the updated responses
-                    SqlDataReader reader = await command.ExecuteReaderAsync();
-
-                    // Create a list to store the updated responses
-                    List<Responses> updatedResponses = new List<Responses>();
-
-                    while (await reader.ReadAsync())
-                    {
-                        Responses updatedResponse = new Responses
-                        {
-                            ResponsesId = reader.GetInt32(0),
-                            QuestionId = reader.GetInt32(1),
-                            CompanyId = reader.GetInt32(2),
-                            ResponseText = reader.GetString(3),
-                            DocumentId = reader.GetInt32(4),
-                        };
-
-                        updatedResponses.Add(updatedResponse);
-                    }
-
-                    await reader.CloseAsync();
-
-                    // Update the documentResponse object with the updated responses
-                    documentResponse.Responses = updatedResponses;
-                }
-
-                return documentResponse;
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Error upserting responses.", e);
-            }
-        }
-
-
+   
         private int GetDocumentIdForResponse(IList<CompanyDocuments> companyDocuments, int documentTypeId)
         {
             int documentId = 0;
@@ -253,13 +133,13 @@ namespace Flyurdreamcommands.Repositories.Concrete
             switch (documentTypeId)
             {
                 case 1:
-                    type = DocumentTypeId.BusinessCertificate;
+                    type = DocumentTypeId.ICEFAccreditation;
                     break;
                 case 2:
-                    type = DocumentTypeId.CompanyProfile;
+                    type = DocumentTypeId.LegalStatus;
                     break;
                 default:
-                    type = DocumentTypeId.OtherBusiness; // Adjust default case as per your enum
+                    type = DocumentTypeId.OtherBusinessDocument; // Adjust default case as per your enum
                     break;
             }
 
@@ -368,13 +248,22 @@ namespace Flyurdreamcommands.Repositories.Concrete
                     if (objagent.IsUpdate.User_IsUpdate == true)
                     {
                         companyDetails.CompanyUser.User = await _userRepository.UpdateUser(companyDetails?.CompanyUser?.User, transaction);
-                        //companyDetails.CompanyUser = await _userRepository.UpsertCompanyUserAsync(companyDetails?.CompanyUser, transaction);
 
+                    }
+                    if (objagent.IsUpdate.CompanyDocuments_IsUpdate == true)
+                    {
+                        DocumentReponse objDocumentReponse = new DocumentReponse();
+                        for (int i = 0; i < objagent.listCompanyDocuments.Count; i++)
+                        {
+                            objagent.listCompanyDocuments[i].Documents = (List<Document>?)await _documentRepository.UpsertDocumentAsync(objagent.listCompanyDocuments[i].Documents, (int)objagent.listCompanyDocuments[i]?.CompanyId, transaction, null);
+                        } 
+                        objDocumentReponse.CompanyDocuments = objagent.listCompanyDocuments;
+                        objDocumentReponse.CompanyId = (int)objagent.listCompanyDocuments[0]?.CompanyId;
+                        objDocumentReponse = await _documentRepository.InsertCompanyDocumentsAsync(objDocumentReponse, transaction);
                     }
                     if (objagent.IsUpdate.AgentInformation_IsUpdate == true)
                     {
                         agent_Information = await UpsertAgentInformation(agent_Information, transaction);
-
 
                     }
                     if (objagent.IsUpdate.listTargetCountries_IsUpdate == true)
@@ -499,45 +388,9 @@ namespace Flyurdreamcommands.Repositories.Concrete
 
             // Return the base64 encoded string
             return await Task.FromResult(base64Content);
-        }
+        } 
 
-
-        public static Document? GetMatchingDocument(Partner partner, Questions question)
-        {
-            foreach (var companyDocumentGroup in partner.CompanyDocuments)
-            {
-                foreach (var companyDocument in companyDocumentGroup.Documents)
-                {
-                    if (companyDocument.DocumentType.Id == question.DocumentType.Id)
-                    {
-                        return companyDocument;
-                    }
-                }
-            }
-            return null;
-        }
-
-        public void UpdateResponsesWithDocumentId(Partner partner)
-        {
-            var questions = partner.Questions;
-            var responses = partner.Responses;
-
-            foreach (var response in responses)
-            {
-                var question = questions.FirstOrDefault(q => q.QuestionId == response.QuestionId);
-                if (question != null && question.InputType == InputType.FileUpload)
-                {
-                    var matchingDocument = GetMatchingDocument(partner, question);
-                    if (matchingDocument != null)
-                    {
-                        response.DocumentId = matchingDocument.DocumentId;
-                    }
-                }
-            }
-
-            // Optionally, save or return the updated responses list
-        }
-
+    
         public async Task<Agent_Information> UpsertAgentInformation(Agent_Information agent, SqlTransaction transaction)
         {
 

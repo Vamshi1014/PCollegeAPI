@@ -14,10 +14,6 @@ namespace Flyurdreamcommands.Models.Datafields
         public Company? Company { get; set; }
         public CompanyUser? CompanyUser { get; set; }
         public IList<CompanyAddress>? CompanyAddresses { get; set; } = new List<CompanyAddress>();
-        public IList<CompanyDocuments>? CompanyDocuments { get; set; } = new List<CompanyDocuments>();
-        public IList<Questions>? Questions { get; set; } = new List<Questions>();
-        public IList<Responses>? Responses { get; set; } = new List<Responses>();
-        public IList<CompanyReferences>? CompanyReferences { get; set; } = new List<CompanyReferences>();
 
         public void SetCompany(Company company)
         {
@@ -27,24 +23,13 @@ namespace Flyurdreamcommands.Models.Datafields
             {
                 if (CompanyUser != null)
                 {
-                    CompanyUser.CompanyId = company.CompanyID;
+                    CompanyUser.CompanyId = (int)company.CompanyID;
                 }
 
                 foreach (var address in CompanyAddresses)
                 {
                     address.CompanyId = company.CompanyID;
-                }
-                foreach (var document in CompanyDocuments)
-                {
-                    document.CompanyId = company.CompanyID;
-                }
-                foreach (var reference in CompanyReferences)
-                {
-                    reference.CompanyId = company.CompanyID;
-                }
-                foreach (var response in Responses)
-                {
-                    response.CompanyId = (int)company.CompanyID;
+                
                 }
             }
         }
@@ -59,7 +44,7 @@ namespace Flyurdreamcommands.Models.Datafields
             {
                 if (Company != null)
                 {
-                    companyUser.CompanyId = Company.CompanyID;
+                    companyUser.CompanyId = (int)Company.CompanyID;
                 }
 
                 //if (User != null)
@@ -75,7 +60,7 @@ namespace Flyurdreamcommands.Models.Datafields
     {
         public int CompanyUserId { get; set; }
         public User User { get; set; }
-        public int? CompanyId { get; set; }
+        public int CompanyId { get; set; }
         public int? IsPrimaryContact { get; set; }
         public int? BranchId { get; set; }
         public int? IsParent{ get; set; }
@@ -95,7 +80,7 @@ namespace Flyurdreamcommands.Models.Datafields
     public class CompanyDocuments
     {
         public int CompanyDocumentId { get; set; }
-        public int? CompanyId { get; set; }
+        public int CompanyId { get; set; }
         public IList<Document>? Documents { get; set; } = new List<Document>();
     }
 
@@ -132,7 +117,7 @@ namespace Flyurdreamcommands.Models.Datafields
             {
                 if (CompanyUser != null)
                 {
-                    CompanyUser.CompanyId = company.CompanyID;
+                    CompanyUser.CompanyId = (int)company.CompanyID;
                 }
 
                 if (CompanyAddress != null)
@@ -151,15 +136,9 @@ namespace Flyurdreamcommands.Models.Datafields
     {
         public int CompanyId { get; set; }
         public IList<CompanyDocuments>? CompanyDocuments { get; set; } = new List<CompanyDocuments>();
-        public IList<Responses>? Responses { get; set; } = new List<Responses>();
-        public IList<Questions>? Questions { get; set; } = new List<Questions>();
+        //public IList<Responses>? Responses { get; set; } = new List<Responses>();
+        //public IList<Questions>? Questions { get; set; } = new List<Questions>();
     }
-    public class QuestionReponse
-    {
-        public int CompanyId { get; set; }
 
-        public IList<Responses>? Responses { get; set; } = new List<Responses>();
-        public IList<Document>? Documents { get; set; } = new List<Document>();
-    }
 
 }
