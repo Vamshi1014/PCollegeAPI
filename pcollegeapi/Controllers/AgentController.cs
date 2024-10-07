@@ -25,5 +25,17 @@ namespace Flyurdreamapi.Controllers
             List<Responses> response = AgentRepository.BulkUpsertResponses(responses);
             return response;
         }
+        [HttpGet("/GetCompanyDetails/{id}")]
+        public async Task<IActionResult> GetCompanyDetails(int id)
+        {
+            var agent = await AgentRepository.CompanyDetailsAsyncByCompanyId(id);
+
+            if (agent == null)
+            {
+                return NotFound("Agent not found.");
+            }
+
+            return Ok(agent);
+        }
     }
 }

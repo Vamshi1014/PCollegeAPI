@@ -13,5 +13,6 @@ namespace Flyurdreamcommands.Repositories.Abstract
        //  Task<Company> ExecuteUpsertCompanyDetailsAsync(Company company);
 
         List<Responses> BulkUpsertResponses(List<Responses> responses);
+        Task <Agent> CompanyDetailsAsyncByCompanyId(int CompanyId);
     }
 }
