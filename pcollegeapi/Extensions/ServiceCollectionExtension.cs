@@ -33,6 +33,7 @@ namespace Flyurdreamapi.Extensions
             services.AddTransient<IStudentRepository,StudentRepository>();
             services.AddTransient<IUniversityRepository, UniversityRepository>();
             services.AddScoped<IPermissionRepository, PermissionRepository>();
+            services.AddTransient<IAgentRepository, AgentRepository>();
 
 
             // Register AuthorizeAction with its dependencies

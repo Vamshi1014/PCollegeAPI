@@ -175,8 +175,8 @@ namespace Flyurdreamcommands.Repositories.Concrete
                                                     ServiceCharges = reader.GetSafeString("ServiceCharges"),
                                                     UploadedOn = reader.GetSafeDateTime("UploadedOn"),
                                                     CreatedOn = reader.GetSafeDateTime("CreatedOn"),
-                                                    Status = reader.GetInt32OrDefault("Status"),
-                                                    IsActive = reader.GetInt32OrDefault("isActive"),
+                                                    //Status = reader.GetInt32OrDefault("Status"),
+                                                    //IsActive = reader.GetBoolean("isActive"),
                                                     CompanyId = reader.GetInt32OrDefault("CompanyId"),
                                                     BranchId = reader.GetInt32OrDefault("BranchId"),
                                                     Agent_Unique_Id = reader.GetSafeString("Agent_Unique_Id")
@@ -246,7 +246,10 @@ namespace Flyurdreamcommands.Repositories.Concrete
                                                 DocumentName = reader.GetSafeString("document_name"),
                                                 FilePath = reader.GetSafeString("file_path"),
                                                     UploadedAt = reader.GetSafeDateTime("uploaded_at"),
-                                                    DocumentType = new DocumentType { Name= reader.GetSafeString("document_type") },
+                                                    DocumentType = new DocumentType
+                                                    {
+                                                        Id = (DocumentTypeId)Enum.ToObject(typeof(DocumentTypeId), reader.GetInt32("document_type")),
+                                                    },
                                                     ContainerName = reader.GetSafeString("container_name")
                                                 };
                                                 CompanyDocuments companyDocuments = new CompanyDocuments

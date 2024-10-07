@@ -255,8 +255,12 @@ namespace Flyurdreamcommands.Repositories.Concrete
                         DocumentReponse objDocumentReponse = new DocumentReponse();
                         for (int i = 0; i < objagent.listCompanyDocuments.Count; i++)
                         {
-                            objagent.listCompanyDocuments[i].Documents = (List<Document>?)await _documentRepository.UpsertDocumentAsync(objagent.listCompanyDocuments[i].Documents, (int)objagent.listCompanyDocuments[i]?.CompanyId, transaction, null);
-                        } 
+                            if (objagent.listCompanyDocuments[i].Documents[0].IsUpload == true)
+                            {
+                                objagent.listCompanyDocuments[i].Documents = (List<Document>?)await _documentRepository.UpsertDocumentAsync(objagent.listCompanyDocuments[i].Documents, (int)objagent.listCompanyDocuments[i]?.CompanyId, transaction, null);
+
+                            }
+                        }
                         objDocumentReponse.CompanyDocuments = objagent.listCompanyDocuments;
                         objDocumentReponse.CompanyId = (int)objagent.listCompanyDocuments[0]?.CompanyId;
                         objDocumentReponse = await _documentRepository.InsertCompanyDocumentsAsync(objDocumentReponse, transaction);
