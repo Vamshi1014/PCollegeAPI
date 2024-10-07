@@ -15,6 +15,7 @@ namespace Flyurdreamcommands.Helpers
             {
                 DocumentFor.Business => "Business",
                 DocumentFor.Student => "Student",
+                DocumentFor.Pcollege => "Pcollege",
                 _ => throw new ArgumentException($"Unsupported enum value: {value}"),
             };
         }
@@ -22,9 +23,9 @@ namespace Flyurdreamcommands.Helpers
         {
             return value switch
             {
-                DocumentTypeId.BusinessCertificate => "BusinessCertificate",
-                DocumentTypeId.CompanyProfile => "CompanyProfile",
-                DocumentTypeId.OtherBusiness => "OtherBusiness",
+                DocumentTypeId.ICEFAccreditation => "ICEFAccreditation",
+                DocumentTypeId.LegalStatus => "LegalStatus",
+                DocumentTypeId.OtherBusinessDocument => "OtherBusinessDocument",
                 DocumentTypeId.SSC => "SSC",
                 DocumentTypeId.Passport => "Passport",
                 DocumentTypeId.Intermediate => "Intermediate",

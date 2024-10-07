@@ -10,7 +10,7 @@ namespace Flyurdreamcommands.Models.Datafields
             table.Columns.Add("document_id", typeof(int));
             table.Columns.Add("document_name", typeof(string));
             table.Columns.Add("file_path", typeof(string)); // Change to string to store URL
-            table.Columns.Add("uploaded_by", typeof(string));
+            table.Columns.Add("uploaded_by", typeof(int));
             table.Columns.Add("uploaded_at", typeof(DateTime));
             table.Columns.Add("document_type", typeof(int));
             table.Columns.Add("container_name", typeof(string));

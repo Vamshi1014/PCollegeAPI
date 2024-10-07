@@ -8,27 +8,29 @@ namespace Flyurdreamcommands.Models.Enum
 {
     public enum DocumentTypeId
     {
-        BusinessCertificate = 6,
-        CompanyProfile = 7,
-        OtherBusiness = 8,
+
+        ICEFAccreditation = 6,
+        LegalStatus = 7,
+        OtherBusinessDocument = 8,
         SSC = 9,
         Passport = 10,
         Intermediate = 11,
-        Bachelors = 31,
         Masters = 12,
-        OtherCandidate = 14,
-        Resume =15,
-        OfferLetter =16,
-        SOP = 17,
-        LanguageExam = 18,
-        LOR = 19
+        OtherCandidate = 13,
+        Resume = 14,
+        OfferLetter = 15,
+        SOP = 16,
+        LanguageExam = 17,
+        LOR = 18,
+        Bachelors = 31
 
     }
 
     public enum DocumentFor
     {
         Business,
-        Student
+        Student,
+        Pcollege
     }
 
 }
