@@ -470,7 +470,32 @@ namespace Flyurdreamcommands.Repositories.Concrete
                     SqlParameter parameter = command.Parameters.AddWithValue("@Countries", targetCountriesDataTable);
                     parameter.SqlDbType = SqlDbType.Structured;
                     parameter.TypeName = "dbo.TargetCountriesType";
-                    await command.ExecuteNonQueryAsync();
+                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        List<int> targetCountriesIds = new List<int>();
+                        int index = 0;
+
+                        // Reading the result set asynchronously
+                        while (await reader.ReadAsync())
+                        {
+                            int targetCountriesId = reader.GetInt32(0);
+
+                            // Initialize the list if it's null
+                            targetCountries ??= new List<TargetCountries>();
+
+                            // Ensure the list has enough capacity
+                            while (targetCountries.Count <= index)
+                            {
+                                targetCountries.Add(new TargetCountries());
+                            }
+
+                            targetCountries[index].Id = targetCountriesId;
+                            targetCountriesIds.Add(targetCountriesId);
+                            index++;
+                        }
+
+                        return targetCountries;
+                    }
 
                 }
                
@@ -510,10 +535,33 @@ namespace Flyurdreamcommands.Repositories.Concrete
                     SqlParameter parameter = command.Parameters.AddWithValue("@Estimate", targetCountriesDataTable);
                     parameter.SqlDbType = SqlDbType.Structured;
                     parameter.TypeName = "dbo.EstimateNumberOfStudentsPerIntakeType";
-                    await command.ExecuteNonQueryAsync();
+                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        List<int> EstimateNumberOfStudentsPerIntakeIds = new List<int>();
+                        int index = 0;
+
+                        // Reading the result set asynchronously
+                        while (await reader.ReadAsync())
+                        {
+                            int EstimateNumberOfStudentsPerIntakeId = reader.GetInt32(0);
+
+                            // Initialize the list if it's null
+                            estimateStudentsperintakes ??= new List<EstimateStudentsperintake>();
+
+                            // Ensure the list has enough capacity
+                            while (estimateStudentsperintakes.Count <= index)
+                            {
+                                estimateStudentsperintakes.Add(new EstimateStudentsperintake());
+                            }
+
+                            estimateStudentsperintakes[index].Id = EstimateNumberOfStudentsPerIntakeId;
+                            EstimateNumberOfStudentsPerIntakeIds.Add(EstimateNumberOfStudentsPerIntakeId);
+                            index++;
+                        }
+
+                        return estimateStudentsperintakes;
+                    }
                 }
-                
-                return estimateStudentsperintakes;
             }
             catch (Exception e)
             {
