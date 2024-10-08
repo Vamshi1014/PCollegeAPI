@@ -134,9 +134,10 @@ namespace Flyurdreamcommands.Repositories.Concrete
 
                     using (SmtpClient smtpClient = new SmtpClient(mailArgs.SmtpHost, mailArgs.Port))
                     {
-                        smtpClient.UseDefaultCredentials = false;
                         smtpClient.Credentials = new NetworkCredential(mailArgs.MailFrom, mailArgs.Password);
                         smtpClient.EnableSsl = true; // Enable SSL/TLS
+                        smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
+                        smtpClient.UseDefaultCredentials = false;
                         smtpClient.Send(mailMessage);
                         _logger.LogInformation(Const.EmailSentSuccess);
                     }
